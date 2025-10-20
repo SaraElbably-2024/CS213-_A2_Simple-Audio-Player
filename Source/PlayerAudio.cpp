@@ -1,23 +1,23 @@
 #include"PlayerAudio.h"
 PlayerAudio::PlayerAudio()
 {
-	formatManager.registerBasicFormats();
+    formatManager.registerBasicFormats();
 }
 PlayerAudio::~PlayerAudio()
 {
     releaseResources();
 }
-void PlayerAudio ::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
+void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-	transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
-void PlayerAudio ::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
+void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-	transportSource.getNextAudioBlock(bufferToFill);
+    transportSource.getNextAudioBlock(bufferToFill);
 }
-void PlayerAudio ::releaseResources()
+void PlayerAudio::releaseResources()
 {
-	transportSource.releaseResources();
+    transportSource.releaseResources();
 }
 bool PlayerAudio::loadFile(const juce::File& file)
 {
@@ -25,7 +25,7 @@ bool PlayerAudio::loadFile(const juce::File& file)
     {
         if (auto* reader = formatManager.createReaderFor(file))
         {
-             
+
             transportSource.stop();
             transportSource.setSource(nullptr);
             readerSource.reset();
@@ -39,9 +39,9 @@ bool PlayerAudio::loadFile(const juce::File& file)
                 nullptr,
                 reader->sampleRate);
             transportSource.start();
-			return true; // Successfully loaded the file
+            return true; // Successfully loaded the file
         }
-		return false; // Failed to create reader for the file
+        return false; // Failed to create reader for the file
 
     }
     return false;
@@ -53,7 +53,7 @@ void PlayerAudio::play()
 void PlayerAudio::stop()
 {
     transportSource.stop();
-	//transportSource.setPosition(0.0); // Reset position to start
+    //transportSource.setPosition(0.0); // Reset position to start
 }
 void PlayerAudio::setGain(float gain)
 {
@@ -63,19 +63,20 @@ void PlayerAudio::setPosition(double position)
 {
     transportSource.setPosition(position);
 }
+void PlayerAudio::restart() {
+    transportSource.setPosition(0.0);
+    transportSource.start();
+}
 //void PlayerAudio::setLooping(bool shouldLoop)
 //{
 //    transportSource.setLooping(shouldLoop);
 //}
 double PlayerAudio::getPosition() const
 {
-      
-   return transportSource.getCurrentPosition();
+
+    return transportSource.getCurrentPosition();
 }
 double PlayerAudio::getLength()const
 {
-      return transportSource.getLengthInSeconds();
+    return transportSource.getLengthInSeconds();
 }
- 
-
-
