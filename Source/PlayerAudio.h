@@ -19,6 +19,7 @@ public:
     void stop();
     void setGain(float gain);
     void setPosition(double position);
+    void restart();
 
     // Query methods (match implementation: return double)
     double getPosition() const;
@@ -29,6 +30,5 @@ private:
     juce::AudioTransportSource transportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlayerAudio)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };
-
