@@ -53,7 +53,7 @@ void PlayerAudio::play()
 void PlayerAudio::stop()
 {
     transportSource.stop();
-	transportSource.setPosition(0.0); // Reset position to start
+	//transportSource.setPosition(0.0); // Reset position to start
 }
 void PlayerAudio::setGain(float gain)
 {

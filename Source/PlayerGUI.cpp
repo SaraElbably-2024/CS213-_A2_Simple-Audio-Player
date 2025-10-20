@@ -2,7 +2,7 @@
 PlayerGUI::PlayerGUI()
 {
 	//Add buttons and slider
-	for (auto* btn : { &playButton, &stopButton, &loadButton ,&restartButton })
+	for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton })
 	{
 		btn->addListener(this);
 		addAndMakeVisible(btn);
@@ -29,7 +29,7 @@ void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
  {
 	 int y = 20;
 	 loadButton.setBounds(20, y, 100, 40);//(x=20,y=20,width=100,height=40)
-	 restartButton.setBounds(140, y, 80, 40);
+	 muteButton.setBounds(140, y, 80, 40);
 	 stopButton.setBounds(240, y, 80, 40); 
 	 volumeSlider.setBounds(20, 100, getWidth() - 40, 30);
 	 playButton.setBounds(340,y,80,40);
@@ -67,6 +67,33 @@ void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 	 {
 		 playerAudio.stop();
 	 }
+	 else if (button == &muteButton)
+	 {
+		 if (  playerAudio.getLength() > 0) 
+		 {
+			 if (!muted)
+			 {
+				 previousVolume = (float)volumeSlider.getValue();
+				 playerAudio.setGain(0.0f);
+				 volumeSlider.setValue(0.0f);
+				 muteButton.setButtonText("Unmute");
+				 muted = true;
+			 }
+			 else
+			 {
+				 playerAudio.setGain(previousVolume);
+				 volumeSlider.setValue(previousVolume);
+				 muteButton.setButtonText("Mute");
+				 muted = false;
+			 }
+		 }
+		 else
+		 {
+			 DBG("No audio file loaded!");  
+			 return; 
+		 }
+	 }
+
  }
  void PlayerGUI::sliderValueChanged(juce::Slider* slider)
  {

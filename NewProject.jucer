@@ -4,15 +4,15 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="CSOMue" name="NewProject">
     <GROUP id="{408D0ABC-6558-AFAA-FD83-6E7505110B1C}" name="Source">
-      <FILE id="QfliOP" name="PlayerGUI.h" compile="0" resource="0" file="Builds/VisualStudio2022/PlayerGUI.h"/>
-      <FILE id="FGXYWQ" name="PlayerAudio.h" compile="0" resource="0" file="Builds/VisualStudio2022/PlayerAudio.h"/>
-      <FILE id="OYsnWu" name="PlayerGUI.cpp" compile="1" resource="0" file="Builds/VisualStudio2022/PlayerGUI.cpp"/>
-      <FILE id="EzvU0k" name="PlayerAudio.cpp" compile="1" resource="0" file="Builds/VisualStudio2022/PlayerAudio.cpp"/>
       <FILE id="QvV0nG" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="DLqueH" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="hslcQd" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
     </GROUP>
+    <FILE id="okFBrG" name="PlayerAudio.cpp" compile="1" resource="0" file="Source/PlayerAudio.cpp"/>
+    <FILE id="N4yobP" name="PlayerAudio.h" compile="0" resource="0" file="Source/PlayerAudio.h"/>
+    <FILE id="rW6314" name="PlayerGUI.cpp" compile="1" resource="0" file="Source/PlayerGUI.cpp"/>
+    <FILE id="P0cVHi" name="PlayerGUI.h" compile="0" resource="0" file="Source/PlayerGUI.h"/>
   </MAINGROUP>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
