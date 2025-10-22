@@ -2,8 +2,8 @@
 PlayerGUI::PlayerGUI()
 {
     //Add buttons and slider
-    for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton , &restartButton })
-    {
+    for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton , &restartButton , &LoopButton }){
+    
         btn->addListener(this);
         addAndMakeVisible(btn);
     }
@@ -34,6 +34,7 @@ void PlayerGUI::resized() //to show buttoms
     stopButton.setBounds(240, y, 80, 40);
     volumeSlider.setBounds(20, 100, getWidth() - 40, 30);
     playButton.setBounds(340, y, 80, 40);
+    LoopButton.setBounds(540, y, 80, 40);
 }
 void PlayerGUI::buttonClicked(juce::Button* button)//general fun for all buttons 
 {
@@ -63,6 +64,19 @@ void PlayerGUI::buttonClicked(juce::Button* button)//general fun for all buttons
     else if (button == &playButton)
     {
         playerAudio.play();
+    }
+    else if (button == &LoopButton) {
+        isLooping= !isLooping;
+        playerAudio.setLooping(isLooping);
+        if (isLooping) {
+            LoopButton.setButtonText("Loop ON");
+            DBG("Looping is ON");
+        }
+        else {
+            LoopButton.setButtonText("Loop OFF");
+            DBG("Looping is OFF");
+
+        }
     }
     else if (button == &restartButton) {
         playerAudio.restart();

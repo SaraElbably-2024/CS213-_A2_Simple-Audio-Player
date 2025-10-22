@@ -14,6 +14,11 @@ void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     transportSource.getNextAudioBlock(bufferToFill);
+    if (isLooping && transportSource.getCurrentPosition() >= transportSource.getLengthInSeconds())
+    {
+        transportSource.setPosition(0.0);
+        transportSource.start();
+    }
 }
 void PlayerAudio::releaseResources()
 {
@@ -67,10 +72,10 @@ void PlayerAudio::restart() {
     transportSource.setPosition(0.0);
     transportSource.start();
 }
-//void PlayerAudio::setLooping(bool shouldLoop)
-//{
-//    transportSource.setLooping(shouldLoop);
-//}
+void PlayerAudio::setLooping(bool shouldLoop)
+{
+    isLooping = shouldLoop;
+}
 double PlayerAudio::getPosition() const
 {
 
