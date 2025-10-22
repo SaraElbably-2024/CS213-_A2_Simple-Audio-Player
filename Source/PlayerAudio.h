@@ -17,9 +17,12 @@ public:
     bool loadFile(const juce::File& file);
     void play();
     void stop();
+    void pause();
+    void gotostart();
     void setGain(float gain);
     void setPosition(double position);
     void restart();
+    void setLooping(bool shouldLoop);
 
     // Query methods (match implementation: return double)
     double getPosition() const;
@@ -29,6 +32,6 @@ private:
     juce::AudioFormatManager formatManager;
     juce::AudioTransportSource transportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
-
+    bool isLooping = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };

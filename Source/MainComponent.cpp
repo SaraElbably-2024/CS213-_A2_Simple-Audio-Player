@@ -44,7 +44,7 @@ void MainComponent::releaseResources()
 void MainComponent::paint(juce::Graphics& g)
 {
      
-    g.fillAll(juce::Colours::darkgrey);
+    g.fillAll(juce::Colours::lightpink);
     g.setFont(40.0f);
     g.setColour(juce::Colours::black);
     g.drawText("AUDIO PLAYER", getLocalBounds(), juce::Justification::centred);
