@@ -22,7 +22,11 @@ private:
     juce::TextButton loadButton{ "Load" };
     juce::TextButton muteButton{ "Mute" };
     juce::TextButton restartButton{ "Restart" };
+    juce::TextButton gotostartButton{ "Go to start" };
+    juce::TextButton pauseButton{ "Pause" };
+    juce::TextButton endButton{ "End" };
     juce::TextButton LoopButton{ "Loop OFF" };
+
     juce::Slider volumeSlider;
 
     std::unique_ptr<juce::FileChooser> fileChooser;
@@ -30,6 +34,7 @@ private:
     bool muted = false;
     float previousVolume = 0.05f;
     bool isLooping = false;
+
     //Event handlers
     void buttonClicked(juce::Button* button) override;
     void sliderValueChanged(juce::Slider* slider) override;

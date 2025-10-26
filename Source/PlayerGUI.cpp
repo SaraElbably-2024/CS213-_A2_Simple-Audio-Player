@@ -2,7 +2,9 @@
 PlayerGUI::PlayerGUI()
 {
     //Add buttons and slider
-    for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton , &restartButton , &LoopButton }){
+    for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton , &restartButton ,&gotostartButton ,&pauseButton ,&endButton,  &LoopButton })
+    {
+   
     
         btn->addListener(this);
         addAndMakeVisible(btn);
@@ -29,12 +31,16 @@ void PlayerGUI::resized() //to show buttoms
 {
     int y = 20;
     loadButton.setBounds(20, y, 100, 40);//(x=20,y=20,width=100,height=40)
-    muteButton.setBounds(140, y, 80, 40);
+    muteButton.setBounds(340, y, 80, 40);
     restartButton.setBounds(440, y, 80, 40);
-    stopButton.setBounds(240, y, 80, 40);
+    stopButton.setBounds(740, y, 80, 40);
     volumeSlider.setBounds(20, 100, getWidth() - 40, 30);
-    playButton.setBounds(340, y, 80, 40);
-    LoopButton.setBounds(540, y, 80, 40);
+    playButton.setBounds(140, y, 80, 40);
+    pauseButton.setBounds(240, y, 80, 40);
+    endButton.setBounds(640, y, 80, 40);
+    gotostartButton.setBounds(540, y, 80, 40);
+    LoopButton.setBounds(740, y, 80, 40);
+   
 }
 void PlayerGUI::buttonClicked(juce::Button* button)//general fun for all buttons 
 {
@@ -111,6 +117,34 @@ void PlayerGUI::buttonClicked(juce::Button* button)//general fun for all buttons
             return;
         }
     }
+    else if (button == &pauseButton)
+    {
+        playerAudio.pause();
+    }
+    else if (button == &gotostartButton)
+    {
+        playerAudio.restart();
+    }
+    else if (button == &LoopButton) {
+        isLooping = !isLooping;
+        playerAudio.setLooping(isLooping);
+        if (isLooping) {
+            LoopButton.setButtonText("Loop ON");
+            DBG("Looping is ON");
+        }
+        else {
+            LoopButton.setButtonText("Loop OFF");
+            DBG("Looping is OFF");
+
+        }
+    }
+    else if (button == &endButton)
+    {
+        playerAudio.stop();
+        playerAudio.setPosition(0.0);
+    }
+
+    
 
 
 }
