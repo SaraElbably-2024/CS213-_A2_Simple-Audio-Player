@@ -11,15 +11,7 @@ void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
-void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    transportSource.getNextAudioBlock(bufferToFill);
-    if (isLooping && transportSource.getCurrentPosition() >= transportSource.getLengthInSeconds())
-    {
-        transportSource.setPosition(0.0);
-        transportSource.start();
-    }
-}
+
 void PlayerAudio::releaseResources()
 {
     transportSource.releaseResources();
@@ -93,3 +85,34 @@ double PlayerAudio::getLength() const
 {
     return transportSource.getLengthInSeconds();
 }
+void PlayerAudio::setSegmentLoop(double start, double end)
+{
+    if (start >= 0.0 && end > start && end <= transportSource.getLengthInSeconds()) {
+        segmentStart = start;
+        segmentEnd = end;
+        isLooping = false;
+        DBG("Segment loop set from " + juce::String(start) + " to " + juce::String(end));
+    }
+    else if (start == -1.0 && end == -1.0) {
+        segmentStart = -1.0;
+        segmentEnd = -1.0;
+        DBG("Segment loop cleared");
+    }
+}
+void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
+{
+    transportSource.getNextAudioBlock(bufferToFill);
+	double currentPos = transportSource.getCurrentPosition();
+    if (segmentStart != -1.0 && segmentEnd != -1.0) {
+        double currentPosition = transportSource.getCurrentPosition();
+        if (currentPosition >= segmentEnd) {
+            transportSource.setPosition(segmentStart);
+        }
+    }
+    else if (isLooping && currentPos >= transportSource.getLengthInSeconds())
+    {
+        transportSource.setPosition(0.0);
+        transportSource.start();
+    }
+}
+  
