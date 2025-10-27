@@ -12,7 +12,7 @@ public:
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
-
+	void setSegmentLoop(double start, double end);
     // Player controls
     bool loadFile(const juce::File& file);
     void play();
@@ -23,6 +23,7 @@ public:
     void setPosition(double position);
     void restart();
     void setLooping(bool shouldLoop);
+    
 
     // Query methods (match implementation: return double)
     double getPosition() const;
@@ -33,5 +34,7 @@ private:
     juce::AudioTransportSource transportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     bool isLooping = false;
+    double segmentStart = -1.0;
+	double segmentEnd = -1.0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };
