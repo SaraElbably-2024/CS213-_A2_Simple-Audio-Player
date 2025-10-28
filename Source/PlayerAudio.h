@@ -12,7 +12,8 @@ public:
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
-	void setSegmentLoop(double start, double end);
+    void setSegmentLoop(double start, double end);
+
     // Player controls
     bool loadFile(const juce::File& file);
     void play();
@@ -23,18 +24,36 @@ public:
     void setPosition(double position);
     void restart();
     void setLooping(bool shouldLoop);
-    
 
-    // Query methods (match implementation: return double)
+    //speed====
+    void setSpeed(double newSpeed); // New function to control playback speed
+
+    // Query methods
     double getPosition() const;
     double getLength() const;
 
+    //sleeptime
+    void startSleepTimer(double seconds);
+    void checkSleepTimer();
 private:
     juce::AudioFormatManager formatManager;
     juce::AudioTransportSource transportSource;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    
+    //speed====
+    std::unique_ptr<juce::ResamplingAudioSource> resampleSource; // will wrap transportSource
+
     bool isLooping = false;
     double segmentStart = -1.0;
-	double segmentEnd = -1.0;
+    double segmentEnd = -1.0;
+
+    double currentSpeed = 1.0; //speed==== default speed
+
+    //sleeptime
+    bool sleepTimerEnabled = false;
+    double sleepTimeInSeconds = 0;
+    juce::Time sleepStartTime;
+    //---------
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };

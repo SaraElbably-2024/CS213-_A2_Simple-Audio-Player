@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <JuceHeader.h>
 #include "PlayerAudio.h"
 class PlayerGUI : public juce::Component,
@@ -12,7 +12,7 @@ public:
 
     void resized() override;
     void timerCallback() override;
-	void paint(juce::Graphics& g) override;
+    void paint(juce::Graphics& g) override;
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate);
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill);
     void releaseResources();
@@ -30,26 +30,32 @@ private:
     juce::TextButton LoopButton{ "Loop OFF" };
 
     juce::Slider volumeSlider;
-	juce::Slider positionSlider;
+    juce::Slider positionSlider;
     juce::Label timeLabel;
-
-	juce::TextButton setAButton{ "Set A" };
-	juce::TextButton setBButton{ "Set B" };
-	juce::TextButton clearABButton{ "Clear A-B" };
-
+    //new by bably
+    juce::Slider speedSlider;
+    juce::Label speedLabel;
+    //======
+    juce::TextButton setAButton{ "Set A" };
+    juce::TextButton setBButton{ "Set B" };
+    juce::TextButton clearABButton{ "Clear A-B" };
+    //sleeptime
+    juce::TextEditor sleepTimeEditor;
+    juce::TextButton startSleepButton{ "Start Sleep" };
+    //--------
     std::unique_ptr<juce::FileChooser> fileChooser;
 
     bool muted = false;
     float previousVolume = 0.05f;
     bool isLooping = false;
-	double loopStartA = -1.0;
-	double loopEndB = -1.0;
+    double loopStartA = -1.0;
+    double loopEndB = -1.0;
 
     //Event handlers
     void buttonClicked(juce::Button* button) override;
     void sliderValueChanged(juce::Slider* slider) override;
-	juce::String secondsToTimeString(double seconds);
-   
+    juce::String secondsToTimeString(double seconds);
+
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerGUI)
