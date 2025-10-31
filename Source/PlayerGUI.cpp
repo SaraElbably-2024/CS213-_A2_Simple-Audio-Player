@@ -20,11 +20,6 @@ PlayerGUI::PlayerGUI()
         addAndMakeVisible(btn);
     }
 
-    volumeSlider.setRange(0.0, 1.0, 0.01);
-    volumeSlider.setValue(0.5);
-    volumeSlider.addListener(this);
-    addAndMakeVisible(volumeSlider);
-
     positionSlider.setRange(0.0, 1.0, 0.001);
     positionSlider.addListener(this);
     addAndMakeVisible(positionSlider);
@@ -78,34 +73,64 @@ void PlayerGUI::releaseResources()
 {
     playerAudio.releaseResources();
 }
-
+void PlayerGUI::setGain(float gain)
+{
+    playerAudio.setGain(gain);
+  
+    }
 void PlayerGUI::resized()
 {
-    int y = 20;
-    loadButton.setBounds(40, y, 80, 40);
-    muteButton.setBounds(340, y, 80, 40);
-    restartButton.setBounds(440, y, 80, 40);
-    stopButton.setBounds(740, y, 80, 40);
-    playButton.setBounds(140, y, 80, 40);
-    pauseButton.setBounds(240, y, 80, 40);
-    endButton.setBounds(640, y, 80, 40);
-    gotostartButton.setBounds(540, y, 80, 40);
-    LoopButton.setBounds(840, y, 80, 40);
-    setAButton.setBounds(940, y, 80, 40);
-    setBButton.setBounds(1040, y, 80, 40);
-    clearABButton.setBounds(1140, y, 80, 40);
+    
+    auto area = getLocalBounds();
+    int y = 5; 
+    int rowHeight = 35;
+    int margin = 5;
 
-    volumeSlider.setBounds(20, 100, getWidth() - 40, 30);
-    positionSlider.setBounds(20, 150, getWidth() - 40, 30);
-    timeLabel.setBounds(20, 185, getWidth() - 40, 20);
+  
+    auto buttonArea = area.removeFromTop(rowHeight + 5).reduced(margin);
+    int buttonWidth = buttonArea.getWidth() / 12; // 12 زر
+    int x = 0;
 
-    //speed====
-    speedLabel.setBounds(20, 230, 80, 20);
-    speedSlider.setBounds(100, 230, 200, 20);
-    //sleeptime
-    sleepTimeEditor.setBounds(20, 290, 80, 40);
-    startSleepButton.setBounds(120,290, 80, 40);
-    //---------
+   
+    loadButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    playButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    pauseButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    muteButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    restartButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    gotostartButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    endButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    stopButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    LoopButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    setAButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    setBButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    clearABButton.setBounds(x, 0, buttonWidth, rowHeight);
+
+    // ---------------------------------------------------------------------
+
+    positionSlider.setBounds(area.removeFromTop(30).reduced(margin));
+
+   
+    timeLabel.setBounds(area.removeFromTop(20).reduced(margin));
+
+    // ---------------------------------------------------------------------
+
+    
+    auto speedArea = area.removeFromTop(30).reduced(margin);
+    speedLabel.setBounds(speedArea.removeFromLeft(80));
+    speedSlider.setBounds(speedArea);
+
+    // ---------------------------------------------------------------------
+
+    
+    auto sleepArea = area.removeFromTop(40).reduced(margin); 
+
+    
+    sleepTimeEditor.setBounds(sleepArea.removeFromLeft(100));
+
+  
+    startSleepButton.setBounds(sleepArea.removeFromLeft(150));
+
+    
 }
 
 void PlayerGUI::buttonClicked(juce::Button* button)
@@ -114,7 +139,8 @@ void PlayerGUI::buttonClicked(juce::Button* button)
     {
         fileChooser = std::make_unique<juce::FileChooser>("Select an audio file to play...",
             juce::File{},
-            ".wav;.mp3;*.aiff");
+            "*.wav;*.mp3;*.aiff;*.flac;*.ogg;*.m4a"); 
+        
 
         auto chooserFlags = juce::FileBrowserComponent::openMode
             | juce::FileBrowserComponent::canSelectFiles;
@@ -164,16 +190,22 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         {
             if (!muted)
             {
-                previousVolume = (float)volumeSlider.getValue();
-                playerAudio.setGain(0.0f);
-                volumeSlider.setValue(0.0f);
+             
+                previousVolume = playerAudio.getGain(); 
+
+                setGain(0.0f);
                 muteButton.setButtonText("Unmute");
                 muted = true;
             }
             else
             {
-                playerAudio.setGain(previousVolume);
-                volumeSlider.setValue(previousVolume);
+             
+                if (previousVolume <= 0.0f)
+                {
+                    previousVolume = 0.5f;
+                }
+
+                setGain(previousVolume);
                 muteButton.setButtonText("Mute");
                 muted = false;
             }
@@ -236,11 +268,8 @@ void PlayerGUI::buttonClicked(juce::Button* button)
 
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
 {
-    if (slider == &volumeSlider)
-    {
-        playerAudio.setGain((float)volumeSlider.getValue());
-    }
-    else if (slider == &positionSlider)
+   
+    if (slider == &positionSlider)
     {
         double newPosition = positionSlider.getValue();
         playerAudio.setPosition(newPosition);
