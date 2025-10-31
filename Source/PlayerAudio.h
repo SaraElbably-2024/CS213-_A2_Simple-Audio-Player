@@ -21,6 +21,7 @@ public:
     void pause();
     void gotostart();
     void setGain(float gain);
+    float getGain()const;
     void setPosition(double position);
     void restart();
     void setLooping(bool shouldLoop);

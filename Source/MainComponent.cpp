@@ -6,11 +6,20 @@ MainComponent::MainComponent()
      
     addAndMakeVisible(playerGUI);
 	addAndMakeVisible(playerGUI2);
+    crossfader.setRange(0.0, 1.0, 0.01); 
+    crossfader.setValue(crossfadeValue);
+    crossfader.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    crossfader.addListener(this);
+    addAndMakeVisible(crossfader);
 
-      
-    setSize(800, 350);
+    crossfaderLabel.setText("Mixer (Player 1 <---> Player 2)", juce::dontSendNotification);
+    addAndMakeVisible(crossfaderLabel);
 
-    setAudioChannels(0, 2);//set 0 input channel & open 2 output channel(stereo)
+    setSize(800, 650); 
+    setAudioChannels(0, 2);
+    setSize(800, 650);
+
+    setAudioChannels(0, 2);
 }
 
 MainComponent::~MainComponent()
@@ -20,7 +29,21 @@ MainComponent::~MainComponent()
 }
 
  
+void MainComponent::sliderValueChanged(juce::Slider* slider)
+{
+    if (slider == &crossfader)
+    {
+        crossfadeValue = (float)crossfader.getValue();
 
+    
+        float gain1 = 1.0f - crossfadeValue;
+
+    
+        float gain2 = crossfadeValue;
+        playerGUI.setGain(gain1);
+        playerGUI2.setGain(gain2);
+    }
+}
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
 
@@ -34,12 +57,14 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
      
     bufferToFill.clearActiveBufferRegion();
     playerGUI.getNextAudioBlock(bufferToFill);
+   
 	juce::AudioBuffer<float> tempBuffer(bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
     juce::AudioSourceChannelInfo info2;
 	info2.buffer = &tempBuffer;
 	info2.startSample = 0;
 	info2.numSamples = bufferToFill.numSamples;
     playerGUI2.getNextAudioBlock(info2);
+
     for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel)
     {
         bufferToFill.buffer->addFrom(channel, bufferToFill.startSample,
@@ -70,10 +95,21 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     auto area = getLocalBounds();
-	playerGUI.setBounds(area.removeFromTop(area.getHeight() / 2));
-    
-    playerGUI2.setBounds(area);
+    int segmentHeight = area.getHeight() / 3;
 
+    
+    auto playerArea1 = area.removeFromTop(segmentHeight + 50); 
+    playerGUI.setBounds(playerArea1);
+
+   
+    auto playerArea2 = area.removeFromTop(segmentHeight + 50); 
+    playerGUI2.setBounds(playerArea2);
+
+   
+    auto mixerArea = area.reduced(20);
+
+    crossfaderLabel.setBounds(mixerArea.removeFromTop(20));
+    crossfader.setBounds(mixerArea.removeFromTop(50));
    
 }
  

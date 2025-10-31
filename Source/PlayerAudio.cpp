@@ -112,6 +112,10 @@ void PlayerAudio::startSleepTimer(double seconds)
     sleepTimeInSeconds = seconds;
     sleepStartTime = juce::Time::getCurrentTime();
 }
+float PlayerAudio::getGain() const
+{
+    return transportSource.getGain();
+}
 
 void PlayerAudio::checkSleepTimer()
 {
