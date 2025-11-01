@@ -55,6 +55,18 @@ PlayerGUI::PlayerGUI()
         if (seconds > 0)
             playerAudio.startSleepTimer(seconds);
         };
+    //progress bar
+    
+    progressBar.setSliderStyle(juce::Slider::LinearHorizontal);
+    progressBar.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);  
+    progressBar.setEnabled(false);  
+    addAndMakeVisible(progressBar);
+    addAndMakeVisible(progressTimeLabal);
+    // ===== ألوان ال progress bar =====
+    progressBar.setColour(juce::Slider::trackColourId, juce::Colours::darkgrey);
+    progressBar.setColour(juce::Slider::thumbColourId, juce::Colours::deeppink); 
+
+    //----------
 }
 
 PlayerGUI::~PlayerGUI() {};
@@ -129,6 +141,18 @@ void PlayerGUI::resized()
 
   
     startSleepButton.setBounds(sleepArea.removeFromLeft(150));
+    // progress bar  
+    auto progressArea = area.removeFromTop(30).reduced(margin);
+
+     
+    int timeWidth = 100;  
+    progressTimeLabal.setBounds(progressArea.getX(), progressArea.getY(), timeWidth, progressArea.getHeight());
+    progressTimeLabal.setColour(juce::Label::textColourId, juce::Colours::white);
+    progressTimeLabal.setJustificationType(juce::Justification::centredRight);
+
+     
+    progressBar.setBounds(progressArea.getX() + timeWidth + 5, progressArea.getY(),
+        progressArea.getWidth() - timeWidth - 5, progressArea.getHeight());
 
     
 }
@@ -290,23 +314,42 @@ void PlayerGUI::timerCallback()
     //sleeptime
     playerAudio.checkSleepTimer();
     //------
+
     double currentPosition = playerAudio.getPosition();
     double totalLength = playerAudio.getLength();
-    if (totalLength > 0.0) {
+
+    if (totalLength > 0.0)
+    {
+        // position slider
         positionSlider.setRange(0.0, totalLength, 0.001);
         if (!positionSlider.isMouseButtonDown()) {
             positionSlider.setValue(currentPosition, juce::dontSendNotification);
         }
-
         juce::String timeString = secondsToTimeString(currentPosition) + " / " + secondsToTimeString(totalLength);
         timeLabel.setText(timeString, juce::dontSendNotification);
+        //progress Bar
+        progressBar.setRange(0.0, totalLength, 0.001);
+        progressBar.setValue(currentPosition, juce::dontSendNotification);
+         
+        juce::String progressText = secondsToTimeString(totalLength - currentPosition) + " / " +
+            secondsToTimeString(currentPosition);
+        progressTimeLabal.setText(progressText, juce::dontSendNotification);
+        //-----------
     }
-    else {
+    else
+    {
         positionSlider.setRange(0.0, 1.0, 0.001);
         positionSlider.setValue(0.0, juce::dontSendNotification);
         timeLabel.setText("00:00 / 00:00", juce::dontSendNotification);
+
+        //progress bar  
+        progressBar.setRange(0.0, 1.0, 0.001);
+        progressBar.setValue(0.0, juce::dontSendNotification);
+        progressTimeLabal.setText("00:00 / 00:00", juce::dontSendNotification);
     }
 }
+
+
 
 void PlayerGUI::paint(juce::Graphics& g)
 {

@@ -45,6 +45,10 @@ private:
     juce::TextButton startSleepButton{ "Start Sleep" };
     //--------
     std::unique_ptr<juce::FileChooser> fileChooser;
+    //slider progress bar
+    juce::Slider progressBar;
+    juce::Label progressTimeLabal;
+    //--------
 
     bool muted = false;
     float previousVolume = 0.05f;
