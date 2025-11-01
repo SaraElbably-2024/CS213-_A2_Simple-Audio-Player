@@ -4,7 +4,9 @@
 class PlayerGUI : public juce::Component,
     public juce::Button::Listener,
     public juce::Slider::Listener,
-    public juce::Timer
+    public juce::Timer,
+    public juce::AudioSource,
+    public juce::ListBoxModel
 {
 public:
     PlayerGUI();
@@ -17,6 +19,13 @@ public:
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill);
     void releaseResources();
     void setGain(float gain);
+
+    //amira part
+    int getNumRows() override;
+    void paintListBoxItem(int rowNumber, juce::Graphics& g, int width, int height, bool rowIsSelected) override;
+    void listBoxItemClicked(int row, const juce::MouseEvent& e) override;
+    void updateMetadataLabel();
+
 private:
     PlayerAudio playerAudio;
     //GUI components
@@ -29,6 +38,12 @@ private:
     juce::TextButton pauseButton{ "Pause" };
     juce::TextButton endButton{ "End" };
     juce::TextButton LoopButton{ "Loop OFF" };
+    juce::TextButton nextButton{ "Next" };
+    juce::TextButton previousButton{ " Previous" };
+    //label and playlistbox
+    juce::Label metadataLabel;
+    juce::ListBox playlistBox;
+   
 
     juce::Slider volumeSlider;
     juce::Slider positionSlider;
@@ -49,17 +64,22 @@ private:
     juce::Slider progressBar;
     juce::Label progressTimeLabal;
     //--------
-
+    juce::Array<juce::File> playlistFiles;
     bool muted = false;
     float previousVolume = 0.05f;
     bool isLooping = false;
     double loopStartA = -1.0;
     double loopEndB = -1.0;
+    int currentIndex =-1;
 
     //Event handlers
     void buttonClicked(juce::Button* button) override;
     void sliderValueChanged(juce::Slider* slider) override;
     juce::String secondsToTimeString(double seconds);
+    
+    void playFileAtIndex(int index);
+    void playNextInPlaylist();
+    void playPreviousInPlaylist();
 
 
 
