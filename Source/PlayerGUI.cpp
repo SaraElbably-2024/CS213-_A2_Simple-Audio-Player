@@ -1,4 +1,6 @@
 ﻿#include "PlayerGUI.h"
+#include<JuceHeader.h>
+using namespace std;
 
 juce::String PlayerGUI::secondsToTimeString(double seconds) {
     if (seconds < 0) { seconds = 0; }
@@ -14,11 +16,22 @@ PlayerGUI::PlayerGUI()
 
     //Add buttons and slider
     for (auto* btn : { &playButton, &stopButton, &loadButton ,&muteButton , &restartButton ,&gotostartButton,
-                       &pauseButton ,&endButton,  &LoopButton , &setBButton , &clearABButton,&setAButton })
+                       &pauseButton ,&endButton,  &LoopButton , &setBButton , &clearABButton,&setAButton,&nextButton,&previousButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
     }
+    //info label
+    metadataLabel.setText("No file loaded", juce::dontSendNotification);
+
+    metadataLabel.setJustificationType(juce::Justification::centred);
+    metadataLabel.setColour(juce::Label::textColourId, juce::Colours::black);
+    metadataLabel.setColour(juce::Label::backgroundColourId, juce::Colours::lightgrey);
+    addAndMakeVisible(metadataLabel);
+
+    //playlist box
+    playlistBox.setModel(this);
+    addAndMakeVisible(playlistBox);
 
     positionSlider.setRange(0.0, 1.0, 0.001);
     positionSlider.addListener(this);
@@ -79,6 +92,25 @@ void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 void PlayerGUI::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     playerAudio.getNextAudioBlock(bufferToFill);
+    //auto advance when track ends
+    if (currentIndex >= 0 && !isLooping)
+    {
+        double pos = playerAudio.getPosition();
+        double len = playerAudio.getLength();
+
+       
+        if (len > 0.0 && pos >= (len - 0.03))
+        {
+            // ensure we call UI changes & file loading on message thread
+            juce::MessageManager::callAsync([this]() {
+                playNextInPlaylist();
+                });
+        }
+    }
+
+
+
+
 }
 
 void PlayerGUI::releaseResources()
@@ -100,7 +132,7 @@ void PlayerGUI::resized()
 
   
     auto buttonArea = area.removeFromTop(rowHeight + 5).reduced(margin);
-    int buttonWidth = buttonArea.getWidth() / 12; // 12 زر
+    int buttonWidth = buttonArea.getWidth() / 14; // 14 زر
     int x = 0;
 
    
@@ -115,8 +147,9 @@ void PlayerGUI::resized()
     LoopButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
     setAButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
     setBButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    clearABButton.setBounds(x, 0, buttonWidth, rowHeight);
-
+    clearABButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    nextButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
+    previousButton.setBounds(x, 0, buttonWidth, rowHeight); 
     // ---------------------------------------------------------------------
 
     positionSlider.setBounds(area.removeFromTop(30).reduced(margin));
@@ -154,7 +187,11 @@ void PlayerGUI::resized()
     progressBar.setBounds(progressArea.getX() + timeWidth + 5, progressArea.getY(),
         progressArea.getWidth() - timeWidth - 5, progressArea.getHeight());
 
-    
+    // metadata label 
+    metadataLabel.setBounds(area.removeFromTop(24).reduced(margin));
+
+    // playlist occupies the remaining bottom area
+    playlistBox.setBounds(area.reduced(margin));
 }
 
 void PlayerGUI::buttonClicked(juce::Button* button)
@@ -167,27 +204,48 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         
 
         auto chooserFlags = juce::FileBrowserComponent::openMode
-            | juce::FileBrowserComponent::canSelectFiles;
+            | juce::FileBrowserComponent::canSelectFiles
+            | juce::FileBrowserComponent::canSelectMultipleItems;
 
         fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser& fc)
             {
-                auto file = fc.getResult();
-                if (file != juce::File{})
+                auto files = fc.getResults();
+                if (files.size() > 0)
                 {
-                    if (playerAudio.loadFile(file))
+                    bool wasEmpty = playlistFiles.size() == 0;
+                    for (auto& f : files)
                     {
-                        DBG("Loaded file: " + file.getFullPathName());
+                        if (f.existsAsFile())
+                        {
+                            playlistFiles.add(f);
+                        }
                     }
-                    else
+
+                    playlistBox.updateContent();
+
+                    // If playlist was empty before and we added files, auto-play first one
+                    if (wasEmpty && playlistFiles.size() > 0)
                     {
-                        DBG("Failed to load file: " + file.getFullPathName());
+                        playFileAtIndex(0);
                     }
                 }
             });
     }
     else if (button == &playButton)
     {
-        playerAudio.play();
+        if (currentIndex >= 0 && currentIndex < playlistFiles.size())
+        {
+            playerAudio.play();
+            updateMetadataLabel();
+        }
+        else
+        {
+            // if nothing selected but playlist non-empty, play first
+            if (playlistFiles.size() > 0)
+            {
+                playFileAtIndex(0);
+            }
+        }
     }
     else if (button == &LoopButton) {
         isLooping = !isLooping;
@@ -253,6 +311,14 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         playerAudio.stop();
         playerAudio.setPosition(0.0);
     }
+    else if (button == &nextButton)
+    {
+        playNextInPlaylist();
+        }
+    else if (button == &previousButton)
+    {
+        playPreviousInPlaylist();
+        }
     else if (button == &setAButton) {
         loopStartA = playerAudio.getPosition();
         if (loopEndB != -1.0 && loopStartA >= loopEndB) {
@@ -348,6 +414,109 @@ void PlayerGUI::timerCallback()
         progressTimeLabal.setText("00:00 / 00:00", juce::dontSendNotification);
     }
 }
+
+
+
+// ListBoxModel implementations for playlist display
+int PlayerGUI::getNumRows()
+{
+    return (int)playlistFiles.size();
+}
+
+void PlayerGUI::paintListBoxItem(int rowNumber, juce::Graphics& g, int width, int height, bool rowIsSelected)
+{
+    if (rowNumber < 0 || rowNumber >= playlistFiles.size())
+        return;
+
+    auto file = playlistFiles.getReference(rowNumber);
+    juce::String name = file.getFileName();
+
+    if (rowIsSelected)
+    {
+        g.fillAll(juce::Colours::lightblue);
+    }
+
+    g.setColour(juce::Colours::black);
+    g.setFont(height * 0.6f);
+    g.drawText(name, 4, 0, width - 4, height, juce::Justification::centredLeft, true);
+}
+
+void PlayerGUI::listBoxItemClicked(int row, const juce::MouseEvent& )
+{
+    if (row >= 0 && row < playlistFiles.size())
+    {
+        playFileAtIndex(row);
+    }
+}
+
+void PlayerGUI::updateMetadataLabel()
+{
+    // update info label text from playerAudio
+    juce::String info = playerAudio.getFileInfo();
+    if (info.isEmpty() && currentIndex >= 0 && currentIndex < playlistFiles.size())
+        info = playlistFiles[currentIndex].getFileName();
+
+    metadataLabel.setText(info, juce::dontSendNotification);
+    playlistBox.selectRow(currentIndex);
+}
+
+void PlayerGUI::playFileAtIndex(int index)
+{
+    if (index < 0 || index >= playlistFiles.size())
+        return;
+
+    currentIndex = index;
+    auto file = playlistFiles.getReference(index);
+
+    // Load the file on message thread (we are on message thread here)
+    if (playerAudio.loadFile(file))
+    {
+        updateMetadataLabel();
+        // ensure selection visible
+        playlistBox.selectRow(currentIndex);
+    }
+    else
+    {
+        metadataLabel.setText("Failed to load: " + file.getFileName(), juce::dontSendNotification);
+    }
+}
+
+void PlayerGUI::playNextInPlaylist()
+{
+    if (playlistFiles.size() == 0)
+        return;
+
+    int next = currentIndex + 1;
+    if (next >= playlistFiles.size())
+        next = 0; // wrap-around, or choose to stop instead
+    playFileAtIndex(next);
+}
+
+void PlayerGUI::playPreviousInPlaylist()
+{
+    if (playlistFiles.size() == 0)
+        return;
+
+    int prev = currentIndex - 1;
+    if (prev < 0)
+        prev = (int)playlistFiles.size() - 1;
+    playFileAtIndex(prev);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

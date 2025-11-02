@@ -25,6 +25,8 @@ public:
     void setPosition(double position);
     void restart();
     void setLooping(bool shouldLoop);
+    void playNextInPlaylist();
+    void playPreviousInPlaylist();
 
     //speed====
     void setSpeed(double newSpeed); // New function to control playback speed
@@ -32,6 +34,7 @@ public:
     // Query methods
     double getPosition() const;
     double getLength() const;
+    juce::String getFileInfo()const;
 
     //sleeptime
     void startSleepTimer(double seconds);
@@ -43,7 +46,7 @@ private:
     
     //speed====
     std::unique_ptr<juce::ResamplingAudioSource> resampleSource; // will wrap transportSource
-
+    
     bool isLooping = false;
     double segmentStart = -1.0;
     double segmentEnd = -1.0;
@@ -55,6 +58,9 @@ private:
     double sleepTimeInSeconds = 0;
     juce::Time sleepStartTime;
     //---------
+    
 
+    //fileinformation
+    juce::String fileInfo;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };

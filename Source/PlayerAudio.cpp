@@ -6,7 +6,7 @@ PlayerAudio::PlayerAudio()
 
     //speed====
     resampleSource = std::make_unique<juce::ResamplingAudioSource>(&transportSource, false);
-
+    fileInfo = "";
 }
 
 PlayerAudio::~PlayerAudio()
@@ -19,13 +19,15 @@ void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 
     //speed====
-    resampleSource->prepareToPlay(samplesPerBlockExpected, sampleRate);
+    if (resampleSource)
+        resampleSource->prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void PlayerAudio::releaseResources()
 {
     //speed====
-    resampleSource->releaseResources();
+    if (resampleSource)
+        resampleSource->releaseResources();
     transportSource.releaseResources();
 }
 
@@ -35,19 +37,42 @@ bool PlayerAudio::loadFile(const juce::File& file)
     {
         if (auto* reader = formatManager.createReaderFor(file))
         {
+            juce::String title, artist;
+            double duration = reader->lengthInSamples / reader->sampleRate;
+
+            if (reader->metadataValues.containsKey("title"))
+                title = reader->metadataValues["title"];
+            if (reader->metadataValues.containsKey("artist"))
+                artist = reader->metadataValues["artist"];
+
+            
             transportSource.stop();
             transportSource.setSource(nullptr);
             readerSource.reset();
 
             readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
-
             transportSource.setSource(readerSource.get(), 0, nullptr, reader->sampleRate);
+
+            
+            juce::String d = juce::String(duration, 2) + "s";
+            if (title.isNotEmpty() || artist.isNotEmpty())
+                fileInfo = "Title: " + title + " | Artist: " + artist + " | Duration: " + d;
+            else
+                fileInfo = "File: " + file.getFileNameWithoutExtension() + " | Duration: " + d;
+
+            transportSource.setPosition(0.0);
+
+
             transportSource.start();
             return true;
         }
         return false;
     }
     return false;
+}
+juce::String PlayerAudio::getFileInfo() const
+{
+    return fileInfo;
 }
 
 void PlayerAudio::play() { transportSource.start(); }
@@ -80,7 +105,10 @@ void PlayerAudio::setSegmentLoop(double start, double end)
 void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
     //speed====
-    resampleSource->getNextAudioBlock(bufferToFill);
+    if (resampleSource)
+        resampleSource->getNextAudioBlock(bufferToFill);
+    else
+        transportSource.getNextAudioBlock(bufferToFill);
 
     double currentPos = transportSource.getCurrentPosition();
 
