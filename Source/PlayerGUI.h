@@ -48,6 +48,7 @@ private:
     juce::Slider volumeSlider;
     juce::Slider positionSlider;
     juce::Label timeLabel;
+    juce::Label volumeLabel;
     //new by bably
     juce::Slider speedSlider;
     juce::Label speedLabel;

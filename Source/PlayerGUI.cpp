@@ -54,6 +54,18 @@ PlayerGUI::PlayerGUI()
     speedLabel.setText("Speed", juce::dontSendNotification);
     addAndMakeVisible(speedLabel);
     //------
+	// volume slider
+  
+    volumeSlider.setRange(0.0, 1.0, 0.01);
+    volumeSlider.setValue(0.5);
+    volumeSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    volumeSlider.addListener(this);
+    addAndMakeVisible(volumeSlider);
+
+    // Volume Label 💡
+    volumeLabel.setText("Volume", juce::dontSendNotification);
+    addAndMakeVisible(volumeLabel);
+
     //sleeptime
     addAndMakeVisible(sleepTimeEditor);
     sleepTimeEditor.setText("10");  
@@ -67,7 +79,10 @@ PlayerGUI::PlayerGUI()
 
         if (seconds > 0)
             playerAudio.startSleepTimer(seconds);
+
+
         };
+
     //progress bar
     
     progressBar.setSliderStyle(juce::Slider::LinearHorizontal);
@@ -78,8 +93,39 @@ PlayerGUI::PlayerGUI()
     // ===== ألوان ال progress bar =====
     progressBar.setColour(juce::Slider::trackColourId, juce::Colours::darkgrey);
     progressBar.setColour(juce::Slider::thumbColourId, juce::Colours::deeppink); 
-
+    // colourssssssssssss
     //----------
+    juce::Colour orangeColour = juce::Colour::fromString("#FFB25200"); // البرتقالي الداكن للأزرار
+    juce::Colour lightOrange = orangeColour.brighter(0.5f); // البرتقالي الفاتح للمؤشرات
+
+    // 1. تطبيق الألوان على الأزرار
+    for (auto* btn : { &loadButton, &playButton, &pauseButton, &muteButton, &restartButton, &gotostartButton,
+                       &endButton, &stopButton, &LoopButton, &setAButton, &setBButton, &clearABButton,
+                       &nextButton, &previousButton, &startSleepButton })
+    {
+        btn->setColour(juce::TextButton::buttonColourId, orangeColour);
+        btn->setColour(juce::TextButton::buttonOnColourId, orangeColour.darker(0.3f));
+        btn->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+        btn->setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+    }
+
+    // 2. تطبيق الألوان على مؤشرات Sliders والعناوين
+    positionSlider.setColour(juce::Slider::thumbColourId, lightOrange);
+    positionSlider.setColour(juce::Slider::trackColourId, juce::Colours::darkgrey);
+
+    speedSlider.setColour(juce::Slider::thumbColourId, lightOrange);
+    volumeSlider.setColour(juce::Slider::thumbColourId, lightOrange);
+
+    // شريط التقدم (ProgressBar)
+    progressBar.setColour(juce::Slider::thumbColourId, lightOrange);
+
+    // عناوين Labels باللون الأبيض
+    speedLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    volumeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    timeLabel.setColour(juce::Label::textColourId, juce::Colours::white);
+    progressTimeLabal.setColour(juce::Label::textColourId, juce::Colours::white);
+
+
 }
 
 PlayerGUI::~PlayerGUI() {};
@@ -108,9 +154,6 @@ void PlayerGUI::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFi
         }
     }
 
-
-
-
 }
 
 void PlayerGUI::releaseResources()
@@ -122,78 +165,98 @@ void PlayerGUI::setGain(float gain)
     playerAudio.setGain(gain);
   
     }
+// الملف: PlayerGUI.cpp
+
 void PlayerGUI::resized()
 {
-    
-    auto area = getLocalBounds();
-    int y = 5; 
-    int rowHeight = 35;
-    int margin = 5;
+    // 1. تحديد الهامش الداكن الموحد (20 بكسل)
+    // هذا يضمن أن المسافة بين حدود المكون الداكن وحواف المكون الخارجي (البامبي) متساوية
+    int uniformPadding = 20;
 
-  
-    auto buttonArea = area.removeFromTop(rowHeight + 5).reduced(margin);
-    int buttonWidth = buttonArea.getWidth() / 14; // 14 زر
-    int x = 0;
-
-   
-    loadButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    playButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    pauseButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    muteButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    restartButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    gotostartButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    endButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    stopButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    LoopButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    setAButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    setBButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    clearABButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    nextButton.setBounds(x, 0, buttonWidth, rowHeight); x += buttonWidth;
-    previousButton.setBounds(x, 0, buttonWidth, rowHeight); 
-    // ---------------------------------------------------------------------
-
-    positionSlider.setBounds(area.removeFromTop(30).reduced(margin));
-
-   
-    timeLabel.setBounds(area.removeFromTop(20).reduced(margin));
+    // تطبيق الهامش الموحد على جميع الجوانب الأربعة
+    auto area = getLocalBounds().reduced(uniformPadding);
 
     // ---------------------------------------------------------------------
 
+    // إعدادات الأحجام
+    int rowHeight = 20; // ارتفاع الأزرار 
+    int smallSpacing = 5;
+
+    // 2. الأزرار (الصف العلوي)
+    auto buttonArea = area.removeFromTop(rowHeight + 10);
+    int buttonWidth = buttonArea.getWidth() / 14;
+
+    // توزيع 14 زر 
+    loadButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    playButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    pauseButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    muteButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    restartButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    gotostartButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    endButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    stopButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    LoopButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    setAButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    setBButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    clearABButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    nextButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+    previousButton.setBounds(buttonArea.removeFromLeft(buttonWidth));
+
+    // ---------------------------------------------------------------------
+
     
-    auto speedArea = area.removeFromTop(30).reduced(margin);
-    speedLabel.setBounds(speedArea.removeFromLeft(80));
+
+    area.removeFromTop(smallSpacing); // مسافة فاصلة
+
+    // Position Slider (شريط الموقع الرئيسي) - الذي أشرتِ إليه
+    positionSlider.setBounds(area.removeFromTop(15));
+
+    // Time Label (تم تقليصه سابقاً)
+    timeLabel.setBounds(area.removeFromTop(15));
+
+    area.removeFromTop(smallSpacing); // مسافة فاصلة
+
+    // Volume and Speed Sliders (الآن تحت Time Label)
+    auto slidersRowArea = area.removeFromTop(35);
+    int halfWidth = slidersRowArea.getWidth() / 2;
+    int labelWidth = 80;
+
+    // A. Speed Slider (اليسار)
+    auto speedArea = slidersRowArea.removeFromLeft(halfWidth);
+    speedLabel.setBounds(speedArea.removeFromLeft(labelWidth));
     speedSlider.setBounds(speedArea);
 
+    // B. Volume Slider (اليمين)
+    auto volumeArea = slidersRowArea;
+    volumeLabel.setBounds(volumeArea.removeFromLeft(labelWidth));
+    volumeSlider.setBounds(volumeArea);
+
+    area.removeFromTop(smallSpacing); // مسافة فاصلة
+
+    // 4. Sleep Timer
+    auto sleepArea = area.removeFromTop(35);
+
+    int sleepButtonHeight = 25;
+
+    sleepTimeEditor.setBounds(sleepArea.removeFromLeft(100).withHeight(sleepButtonHeight));
+    startSleepButton.setBounds(sleepArea.removeFromLeft(160).withHeight(sleepButtonHeight));
+
     // ---------------------------------------------------------------------
 
-    
-    auto sleepArea = area.removeFromTop(40).reduced(margin); 
-
-    
-    sleepTimeEditor.setBounds(sleepArea.removeFromLeft(100));
-
-  
-    startSleepButton.setBounds(sleepArea.removeFromLeft(150));
-    // progress bar  
-    auto progressArea = area.removeFromTop(30).reduced(margin);
-
-     
-    int timeWidth = 100;  
+    // 5. Progress Bar
+    auto progressArea = area.removeFromTop(35);
+    int timeWidth = 100;
     progressTimeLabal.setBounds(progressArea.getX(), progressArea.getY(), timeWidth, progressArea.getHeight());
-    progressTimeLabal.setColour(juce::Label::textColourId, juce::Colours::white);
     progressTimeLabal.setJustificationType(juce::Justification::centredRight);
-
-     
     progressBar.setBounds(progressArea.getX() + timeWidth + 5, progressArea.getY(),
         progressArea.getWidth() - timeWidth - 5, progressArea.getHeight());
 
-    // metadata label 
-    metadataLabel.setBounds(area.removeFromTop(24).reduced(margin));
+    // metadata label
+    metadataLabel.setBounds(area.removeFromTop(24));
 
-    // playlist occupies the remaining bottom area
-    playlistBox.setBounds(area.reduced(margin));
+    // 6. قائمة التشغيل (Playlist Box) - تأخذ المساحة المتبقية
+    playlistBox.setBounds(area);
 }
-
 void PlayerGUI::buttonClicked(juce::Button* button)
 {
     if (button == &loadButton)
@@ -359,6 +422,11 @@ void PlayerGUI::buttonClicked(juce::Button* button)
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
 {
    
+    if (slider == &volumeSlider)
+    {
+        // استدعاء الدالة المسؤولة عن ضبط مستوى الصوت في PlayerAudio
+        playerAudio.setGain(volumeSlider.getValue());
+    }
     if (slider == &positionSlider)
     {
         double newPosition = positionSlider.getValue();
@@ -373,6 +441,7 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
     {
         playerAudio.setSpeed(speedSlider.getValue());
     }
+
 }
 
 void PlayerGUI::timerCallback()
@@ -503,26 +572,21 @@ void PlayerGUI::playPreviousInPlaylist()
     playFileAtIndex(prev);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void PlayerGUI::paint(juce::Graphics& g)
+/*void PlayerGUI::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(30, 30, 30));
     g.setColour(juce::Colours::deeppink);
     g.drawRect(getLocalBounds(), 2);
+}*/
+// الملف: PlayerGUI.cpp (تعديل دالة paint)
+
+void PlayerGUI::paint(juce::Graphics& g)
+{
+    // 1. تعبئة خلفية PlayerGUI باللون الرمادي المتوسط 💡
+    g.fillAll(juce::Colour(50, 50, 50)); // لون رمادي أفتح قليلاً من خلفية MainComponent
+
+    // 2. رسم إطار حول PlayerGUI بنفس لون الإطار الرئيسي (البمبي الغامق) 💡
+    juce::Colour orangeColour = juce::Colour::fromString("#FFB25200"); // اللون البرتقالي الداكن
+    g.setColour(orangeColour);
+    g.drawRect(getLocalBounds(), 2); // إطار بسمك 2 بكسل
 }
