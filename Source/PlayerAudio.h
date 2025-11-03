@@ -27,7 +27,7 @@ public:
     void setLooping(bool shouldLoop);
     void playNextInPlaylist();
     void playPreviousInPlaylist();
-
+	
     //speed====
     void setSpeed(double newSpeed); // New function to control playback speed
 
