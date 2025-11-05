@@ -428,7 +428,7 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
     if (slider == &volumeSlider)
     {
         
-       // playerAudio.setGain(volumeSlider.getValue());
+       
         float internalGain = volumeSlider.getValue();
         playerAudio.setInternalVolume(internalGain);
         playerAudio.setGain(currentCrossfadeGain * internalGain);
@@ -583,10 +583,10 @@ void PlayerGUI::playPreviousInPlaylist()
 
 void PlayerGUI::paint(juce::Graphics& g)
 {
-    // 1. تعبئة خلفية PlayerGUI باللون الرمادي المتوسط 💡
+    // 1. تعبئة خلفية PlayerGUI باللون الرمادي المتوسط 
     g.fillAll(juce::Colour(50, 50, 50)); // لون رمادي أفتح قليلاً من خلفية MainComponent
 
-    // 2. رسم إطار حول PlayerGUI بنفس لون الإطار الرئيسي (البمبي الغامق) 💡
+    // 2. رسم إطار حول PlayerGUI بنفس لون الإطار الرئيسي (البمبي الغامق) 
     juce::Colour orangeColour = juce::Colour::fromString("#FFB25200"); // اللون البرتقالي الداكن
     g.setColour(orangeColour);
     g.drawRect(getLocalBounds(), 2); // إطار بسمك 2 بكسل
