@@ -162,8 +162,11 @@ void PlayerGUI::releaseResources()
 }
 void PlayerGUI::setGain(float gain)
 {
-    playerAudio.setGain(gain);
-  
+   // playerAudio.setGain(gain);
+    currentCrossfadeGain = gain;
+    float internalGain = volumeSlider.getValue();
+    playerAudio.setInternalVolume(internalGain);
+    playerAudio.setGain(currentCrossfadeGain * internalGain);
     }
 // الملف: PlayerGUI.cpp
 
@@ -424,8 +427,11 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
    
     if (slider == &volumeSlider)
     {
-        // استدعاء الدالة المسؤولة عن ضبط مستوى الصوت في PlayerAudio
-        playerAudio.setGain(volumeSlider.getValue());
+        
+       // playerAudio.setGain(volumeSlider.getValue());
+        float internalGain = volumeSlider.getValue();
+        playerAudio.setInternalVolume(internalGain);
+        playerAudio.setGain(currentCrossfadeGain * internalGain);
     }
     if (slider == &positionSlider)
     {
@@ -572,12 +578,7 @@ void PlayerGUI::playPreviousInPlaylist()
     playFileAtIndex(prev);
 }
 
-/*void PlayerGUI::paint(juce::Graphics& g)
-{
-    g.fillAll(juce::Colour(30, 30, 30));
-    g.setColour(juce::Colours::deeppink);
-    g.drawRect(getLocalBounds(), 2);
-}*/
+
 // الملف: PlayerGUI.cpp (تعديل دالة paint)
 
 void PlayerGUI::paint(juce::Graphics& g)

@@ -79,7 +79,8 @@ void PlayerAudio::play() { transportSource.start(); }
 void PlayerAudio::stop() { transportSource.stop(); }
 void PlayerAudio::pause() { transportSource.stop(); }
 void PlayerAudio::gotostart() { transportSource.setPosition(0.0); }
-void PlayerAudio::setGain(float gain) { transportSource.setGain(gain); }
+void PlayerAudio::setGain(float gain) { transportSource.setGain(gain);
+}
 void PlayerAudio::setPosition(double position) { transportSource.setPosition(position); }
 void PlayerAudio::restart() { transportSource.setPosition(0.0); transportSource.start(); }
 void PlayerAudio::setLooping(bool shouldLoop) { isLooping = shouldLoop; }
@@ -142,7 +143,8 @@ void PlayerAudio::startSleepTimer(double seconds)
 }
 float PlayerAudio::getGain() const
 {
-    return transportSource.getGain();
+   // return transportSource.getGain();
+    return internalVolumeGain;
 }
 
 void PlayerAudio::checkSleepTimer()
@@ -157,3 +159,8 @@ void PlayerAudio::checkSleepTimer()
         }
     }
 }
+void PlayerAudio::setInternalVolume(float gain)
+{
+    internalVolumeGain = gain;
+}
+
