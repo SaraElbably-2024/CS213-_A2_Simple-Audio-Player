@@ -72,7 +72,7 @@ private:
     double loopStartA = -1.0;
     double loopEndB = -1.0;
     int currentIndex =-1;
-
+    float currentCrossfadeGain = 1.0f;
     //Event handlers
     void buttonClicked(juce::Button* button) override;
     void sliderValueChanged(juce::Slider* slider) override;

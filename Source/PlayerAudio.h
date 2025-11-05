@@ -22,6 +22,7 @@ public:
     void gotostart();
     void setGain(float gain);
     float getGain()const;
+    void setInternalVolume(float gain);
     void setPosition(double position);
     void restart();
     void setLooping(bool shouldLoop);
@@ -57,10 +58,11 @@ private:
     bool sleepTimerEnabled = false;
     double sleepTimeInSeconds = 0;
     juce::Time sleepStartTime;
-    //---------
-    
+    //---crossfader------
+    float internalVolumeGain = 1.0f;
 
     //fileinformation
     juce::String fileInfo;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
+
 };
